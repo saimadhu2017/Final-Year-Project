@@ -1,40 +1,26 @@
-# Tweet-Analyzer
-
-Web App Link : https://tweet-analyzer-tool.herokuapp.com/
-
-This is a cool web app integrated with twitter which takes the twitter handel as as input and does :
-
-1.Analyze the tweets of your favourite Personalities
-
-This tool performs the following tasks :
-1. Fetches the 5 most recent tweets from the given twitter handel
-2. Generates a Word Cloud
-3. Performs Sentiment Analysis a displays it in form of a Bar Graph
-
-2.This tool fetches the last 100 tweets from the twitter handel & Performs the following tasks
-Converts it into a DataFrame
-
-Cleans the text
-1. Analyzes Subjectivity of tweets and adds an additional column for it
-2. Analyzes Polarity of tweets and adds an additional column for it
-3. Analyzes Sentiments of tweets and adds an additional column for it
+**Y17 Project Batch-304**
 
 
-This respository contains all the files for end to end model building and deployment of tweet analyzer web app
 
-Procfile : To generate command to run the app
+**REAL TIME SENTIMENT ANALYSIS ON TWITTER**
 
-Tweet_Analyzer.ipynb : Model building File
 
-Twitter Data : File created after every query on the web app
+Real-time analysis is one of the vital things where it is used widely in Big data analytics. Here In
+our project, we are developing a cluster or group which is a set of tweets that are created by
+different users on the Twitter website to tell the user on how he is behaving which is mainly
+focusing on sentimental analysis. Here we used Flume to collect the real-time data which actually
+integrate with the Twitter (website) developer account. To ensure regarding how the data is
+secured, real-time and fast information processing, we used the most famous or popular tools that
+are being used like Flume, Hive and ML algorithms in python to get the results more accurately.
+We used k means clustering technique but before using that we have used TF-IDF approach which
+gives the result in the table format which contains the values of each tweet or sentence that are
+being tweeted by a user. Here, the values that we got in TF-IDF tells how a sentence is positive or
+negative or neutral. Now, K means approach comes because we have converted each sentence with
+a specific value which tells positive or negative or neutral. So, based on the values which are very
+near to each other, they will form a single group or a cluster. So, in our project, we obviously we
+have only 3 clusters, either positive or negative or neutral. Finally, we have to get the output which
+tells the user that whatever he or her tweets are either positive or negative or neutral.
 
-Requirements.txt: Requirement file
+**Outcome of the Project:**
 
-setup.sh : predefined file for streamlite on heroku
-
-This app is created on a tool called Streamlit which saves you from the headache of front-end devlopment ,you can install it by:
-Streamlit documentation: https://docs.streamlit.io/en/latest/
-
-pip install streamlit
-
-& to run it on local host : streamlit run myfile.py
+By the end of the project we will collect the real time twitter data to show how flume,hive and python ML algorthims are far better than the traditional methods by conducting experimental simulations and Doing analysis for predicting the user behavior pattern using various Machine learning algorithms on the website.
