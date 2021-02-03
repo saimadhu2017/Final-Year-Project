@@ -2,7 +2,7 @@
 
 
 
-**REAL TIME SENTIMENT ANALYSIS ON TWITTER**
+**REAL TIME SENTIMENT ANALYSIS ON TWITTER USING WEB APPLICATION**
 
 
 Real-time analysis is one of the vital things where it is used widely in Big data analytics. Here In
