@@ -37,10 +37,15 @@ api = tweepy.API(authenticate, wait_on_rate_limit=True)
 
 
 def app():
+    st.sidebar.header("NAVIGATION")
     st.title("Tweet Analyzer 🔥")
     activities = ["Tweet Analyzer", "Generate Twitter Data",
                   "Tweet Analyzer Using K Means"]
-    choice = st.sidebar.selectbox("Type Of your Activity", activities)
+    # choice = st.sidebar.selectbox("Type Of your Activity", activities)
+    choice = st.sidebar.radio("Select Your Activity", activities)
+    st.sidebar.header("CONFIGURATION NAV BAR")
+    No_Of_Tweets = st.sidebar.slider("No of Tweets", 100, 50000)
+    No_Of_Tweets_In_String = str(No_Of_Tweets)
 
     if(choice == "Tweet Analyzer"):
         st.subheader("Analyze the tweets of your favourite User")
@@ -64,14 +69,14 @@ def app():
                 st.success("Fetching last 5 Tweets")
 
                 def Show_Recent_Tweets(raw_text):
-                    # Extract 100 tweets from the twitter user
+                    # Extract No_Of_Tweets from the twitter user
                     posts = api.user_timeline(
-                        screen_name=raw_text, count=100, lang="en", tweet_mode="extended")
+                        screen_name=raw_text, count=No_Of_Tweets, lang="en", tweet_mode="extended")
 
                     def get_tweets():
                         l = []
                         i = 1
-                        for tweet in posts[:5]:
+                        for tweet in posts[:6]:
                             l.append(tweet.full_text)
                             i = i+1
                         return(l)
@@ -86,7 +91,7 @@ def app():
 
                 def gen_wordcloud():
                     posts = api.user_timeline(
-                        screen_name=raw_text, count=100, lang="en", tweet_mode="extended")
+                        screen_name=raw_text, count=No_Of_Tweets, lang="en", tweet_mode="extended")
                     # Create a dataframe with a column called Tweets
                     df = pd.DataFrame(
                         [tweet.full_text for tweet in posts], columns=['Tweets'])
@@ -109,7 +114,7 @@ def app():
                         "Generating Visualisation for Sentiment Analysis of the User Given.")
 
                     posts = api.user_timeline(
-                        screen_name=raw_text, count=100, lang="en", tweet_mode="extended")
+                        screen_name=raw_text, count=No_Of_Tweets, lang="en", tweet_mode="extended")
                     df = pd.DataFrame(
                         [tweet.full_text for tweet in posts], columns=['Tweets'])
 
@@ -154,7 +159,7 @@ def app():
                 st.pyplot(use_container_width=True)
     elif(choice == "Generate Twitter Data"):
         st.subheader(
-            "This tool fetches the last 100 tweets from the twitter handel & Performs the following tasks")
+            "This tool fetches the last "+No_Of_Tweets_In_String+" tweets from the twitter handel & Performs the following tasks")
         st.write("1. Converts it into a DataFrame")
         st.write("2. Cleans the text")
         st.write(
@@ -171,7 +176,7 @@ def app():
 
         def get_data(user_name):
             posts = api.user_timeline(
-                screen_name=user_name, count=100, lang="en", tweet_mode="extended")
+                screen_name=user_name, count=No_Of_Tweets, lang="en", tweet_mode="extended")
             df = pd.DataFrame(
                 [tweet.full_text for tweet in posts], columns=['Tweets'])
 
@@ -209,13 +214,13 @@ def app():
             return(df)
 
         if(st.button("Show Data")):
-            st.success("Fetching Last 100 Tweets")
+            st.success("Fetching Last "+No_Of_Tweets_In_String+" Tweets")
             df = get_data(user_name)
             st.write(df)
 
     else:
         st.subheader(
-            "This tool fetches the last 100 tweets from the twitter handel & Performs the following tasks")
+            "This tool fetches the last "+No_Of_Tweets_In_String+" tweets from the twitter handel & Performs the following tasks")
         st.write("1. Converts it into a DataFrame")
         st.write("2. Cleans the text")
         st.write(
@@ -234,7 +239,7 @@ def app():
 
             def get_data(user_name):
                 posts = api.user_timeline(
-                    screen_name=user_name, count=100, lang="en", tweet_mode="extended")
+                    screen_name=user_name, count=No_Of_Tweets, lang="en", tweet_mode="extended")
                 df = pd.DataFrame(
                     [tweet.full_text for tweet in posts], columns=['Tweets'])
 
