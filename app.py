@@ -44,7 +44,7 @@ def app():
     # choice = st.sidebar.selectbox("Type Of your Activity", activities)
     choice = st.sidebar.radio("Select Your Activity", activities)
     st.sidebar.header("CONFIGURATION NAV BAR")
-    No_Of_Tweets = st.sidebar.slider("No of Tweets", 100, 50000)
+    No_Of_Tweets = st.sidebar.slider("No of Tweets", 1000, 10000)
     No_Of_Tweets_In_String = str(No_Of_Tweets)
 
     if(choice == "Tweet Analyzer"):
@@ -69,19 +69,10 @@ def app():
                 st.success("Fetching last 5 Tweets")
 
                 def Show_Recent_Tweets(raw_text):
-                    # Extract No_Of_Tweets from the twitter user
-                    posts = api.user_timeline(
-                        screen_name=raw_text, count=No_Of_Tweets, lang="en", tweet_mode="extended")
-
-                    def get_tweets():
-                        l = []
-                        i = 1
-                        for tweet in posts[:6]:
-                            l.append(tweet.full_text)
-                            i = i+1
-                        return(l)
-                    recent_tweets = get_tweets()
-                    return(recent_tweets)
+                    rl = []
+                    for status in tweepy.Cursor(api.user_timeline, screen_name=raw_text, tweet_mode="extended").items(5):
+                        rl.append(status.full_text)
+                    return(rl)
 
                 recent_tweets = Show_Recent_Tweets(raw_text)
                 st.write(recent_tweets)
@@ -90,8 +81,8 @@ def app():
                 st.success("Generating Word Cloud")
 
                 def gen_wordcloud():
-                    posts = api.user_timeline(
-                        screen_name=raw_text, count=No_Of_Tweets, lang="en", tweet_mode="extended")
+                    posts = tweepy.Cursor(
+                        api.user_timeline, screen_name=raw_text, tweet_mode="extended").items(No_Of_Tweets)
                     # Create a dataframe with a column called Tweets
                     df = pd.DataFrame(
                         [tweet.full_text for tweet in posts], columns=['Tweets'])
@@ -113,8 +104,8 @@ def app():
                     st.success(
                         "Generating Visualisation for Sentiment Analysis of the User Given.")
 
-                    posts = api.user_timeline(
-                        screen_name=raw_text, count=No_Of_Tweets, lang="en", tweet_mode="extended")
+                    posts = tweepy.Cursor(
+                        api.user_timeline, screen_name=raw_text, tweet_mode="extended").items(No_Of_Tweets)
                     df = pd.DataFrame(
                         [tweet.full_text for tweet in posts], columns=['Tweets'])
 
@@ -175,8 +166,8 @@ def app():
             "<--------Also Do checkout the another cool tool from the sidebar")
 
         def get_data(user_name):
-            posts = api.user_timeline(
-                screen_name=user_name, count=No_Of_Tweets, lang="en", tweet_mode="extended")
+            posts = tweepy.Cursor(
+                api.user_timeline, screen_name=user_name, tweet_mode="extended").items(No_Of_Tweets)
             df = pd.DataFrame(
                 [tweet.full_text for tweet in posts], columns=['Tweets'])
 
@@ -238,8 +229,8 @@ def app():
         if(st.button("Analyze")):
 
             def get_data(user_name):
-                posts = api.user_timeline(
-                    screen_name=user_name, count=No_Of_Tweets, lang="en", tweet_mode="extended")
+                posts = tweepy.Cursor(
+                    api.user_timeline, screen_name=user_name, tweet_mode="extended").items(No_Of_Tweets)
                 df = pd.DataFrame(
                     [tweet.full_text for tweet in posts], columns=['Tweets'])
 
