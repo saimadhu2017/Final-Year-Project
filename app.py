@@ -40,7 +40,7 @@ def app():
     st.sidebar.header("NAVIGATION")
     st.title("Tweet Analyzer 🔥")
     activities = ["Tweet Analyzer", "Generate Twitter Data",
-                  "Tweet Analyzer Using K Means"]
+                  "Tweet Analyzer Using K Means", "Tweet Analyser with search keyword"]
     # choice = st.sidebar.selectbox("Type Of your Activity", activities)
     choice = st.sidebar.radio("Select Your Activity", activities)
     st.sidebar.header("CONFIGURATION NAV BAR")
@@ -209,7 +209,7 @@ def app():
             df = get_data(user_name)
             st.write(df)
 
-    else:
+    elif(choice == "Tweet Analyzer Using K Means"):
         st.subheader(
             "This tool fetches the last "+No_Of_Tweets_In_String+" tweets from the twitter handel & Performs the following tasks")
         st.write("1. Converts it into a DataFrame")
@@ -277,6 +277,67 @@ def app():
             st.write(frame[frame['Cluster'] == 2])  # Negative cluster
             st.write("Neutral cluster:")
             st.write(frame[frame['Cluster'] == 0])  # Neutral cluster
+    else:
+        st.subheader(
+            "This tool fetches the last "+No_Of_Tweets_In_String+" tweets from the twitter handel & Performs the following tasks")
+        st.write("1. Converts it into a DataFrame")
+        st.write("2. Cleans the text")
+        st.write(
+            "3. Analyzes Subjectivity of tweets and adds an additional column for it")
+        st.write(
+            "4. Analyzes Polarity of tweets and adds an additional column for it")
+        st.write(
+            "5. Analyzes Sentiments of tweets and adds an additional column for it")
+
+        SearchKeyword = st.text_area(
+            "*Enter the keyword to be search to collect the data*")
+        st.markdown(
+            "<--------Also Do checkout the another cool tool from the sidebar")
+        date_since = "2018-11-16"
+
+        def get_data(SearchKeyword):
+            posts = tweepy.Cursor(
+                api.search, q=SearchKeyword, lang="en", since=date_since).items(No_Of_Tweets)
+            df = pd.DataFrame(
+                [tweet.text for tweet in posts], columns=['Tweets'])
+
+            # cleaning the twitter text function
+            def cleanTxt(text):
+                text = re.sub('@[A-Za-z0–9]+', '', text)  # Removing @mentions
+                text = re.sub('#', '', text)  # Removing '#' hash tag
+                text = re.sub('RT[\s]+', '', text)  # Removing RT
+                text = re.sub('https?:\/\/\S+', '', text)  # Removing hyperlink
+                return(text)
+
+            # Clean the tweets
+            df['Tweets'] = df['Tweets'].apply(cleanTxt)
+
+            def getSubjectivity(text):
+                return(TextBlob(text).sentiment.subjectivity)
+
+            # Create a function to get the polarity
+            def getPolarity(text):
+                return(TextBlob(text).sentiment.polarity)
+
+            # Create two new columns 'Subjectivity' & 'Polarity'
+            df['Subjectivity'] = df['Tweets'].apply(getSubjectivity)
+            df['Polarity'] = df['Tweets'].apply(getPolarity)
+
+            def getAnalysis(score):
+                if(score < 0):
+                    return("Negative")
+                elif(score == 0):
+                    return("Neutral")
+                else:
+                    return("Positive")
+
+            df['Analysis'] = df['Polarity'].apply(getAnalysis)
+            return(df)
+
+        if(st.button("Show Data")):
+            st.success("Fetching Last "+No_Of_Tweets_In_String+" Tweets")
+            df = get_data(SearchKeyword)
+            st.write(df)
 
     st.subheader(
         ' ---------------Created By :  Project 304 @KL University --------------- :sunglasses:')
