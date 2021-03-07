@@ -37,29 +37,82 @@ api = tweepy.API(authenticate, wait_on_rate_limit=True)
 
 
 def app():
+    # Decorating the Nav Bar which is left side of APP
     st.sidebar.header("NAVIGATION")
-    st.title("Tweet Analyzer 🔥")
-    activities = ["Tweet Analyzer", "Generate Twitter Data",
+    st.title("REAL TIME SENTIMENT ANALYSIS ON TWITTER ✨")
+    activities = ["Collect The Data", "Clean The Data", "Summary View of Tweets Collected",
                   "Tweet Analyzer Using K Means", "Tweet Analyser with search keyword"]
+
     # choice = st.sidebar.selectbox("Type Of your Activity", activities)
     choice = st.sidebar.radio("Select Your Activity", activities)
     st.sidebar.header("CONFIGURATION NAV BAR")
-    No_Of_Tweets = st.sidebar.slider("No of Tweets", 1000, 10000)
+    No_Of_Tweets = st.sidebar.slider("No of Tweets", 100, 5000)
     No_Of_Tweets_In_String = str(No_Of_Tweets)
+    UserID = st.text_area(
+        "Enter the exact twitter User Id of the User you want to Analyze (without @)")
+    st.markdown(
+        "🔴 Note--> Don't move to next Navbar Section without completing this section.")
+    TweetsData = pd.DataFrame()
 
-    if(choice == "Tweet Analyzer"):
-        st.subheader("Analyze the tweets of your favourite User")
+    def collectData():
+        posts = tweepy.Cursor(api.user_timeline, screen_name=UserID,
+                              tweet_mode="extended").items(No_Of_Tweets)
+        TweetsData = pd.DataFrame(
+            [tweet.full_text for tweet in posts], columns=['Tweets'])
+        return(TweetsData)
+
+    # Step 1
+    if(choice == "Collect The Data"):
+        st.subheader("Analyze the tweets of your favourite User 👦👧:")
+        st.subheader("This tool performs the following tasks as given below:")
+        st.write("1. Fetches the 5 most recent tweets from the given twitter handel")
+        st.write("2. It also collects the tweets which are tweeted by a userID")
+        st.write("3. In this section you just collect the Real Time data and can be used for analyses purpose in next section.")
+
+        if(st.button("Collect The Data")):
+            st.success("Data is being Collected wait for some time")
+            posts = tweepy.Cursor(
+                api.user_timeline, screen_name=UserID, tweet_mode="extended").items(No_Of_Tweets)
+            TweetsData = pd.DataFrame(
+                [tweet.full_text for tweet in posts], columns=['Tweets'])
+            st.write(TweetsData)
+
+    # Step 2
+    elif(choice == "Clean The Data"):
+        TweetsData = collectData()
+
+        def cleanTxt(text):
+            # Removing @mentions
+            text = re.sub('@[A-Za-z0–9]+', '', text)
+            text = re.sub('#', '', text)  # Removing '#' hash tag
+            text = re.sub('RT[\s]+', '', text)  # Removing RT
+            text = re.sub('https?:\/\/\S+', '', text)  # Removing hyperlink
+            return(text)
+
+        # Clean the tweets
+        TweetsData['Tweets'] = TweetsData['Tweets'].apply(cleanTxt)
+        st.write(TweetsData)
+
+    # Step 3
+    elif(choice == "Summary View of Tweets Collected"):
+        TweetsData = collectData()
+
+        def cleanTxt(text):
+            # Removing @mentions
+            text = re.sub('@[A-Za-z0–9]+', '', text)
+            text = re.sub('#', '', text)  # Removing '#' hash tag
+            text = re.sub('RT[\s]+', '', text)  # Removing RT
+            text = re.sub('https?:\/\/\S+', '', text)  # Removing hyperlink
+            return(text)
+        # Clean the tweets
+        TweetsData['Tweets'] = TweetsData['Tweets'].apply(cleanTxt)
+
+        st.subheader("Analyze the tweets of your favourite User 👦👧:")
         st.subheader("This tool performs the following tasks as given below:")
         st.write("1. Fetches the 5 most recent tweets from the given twitter handel")
         st.write("2. Generates a Word Cloud")
         st.write(
             "3. Performs Sentiment Analysis a displays it in form of a Bar Graph")
-
-        raw_text = st.text_area(
-            "Enter the exact twitter User Id of the User you weant to Analyze (without @)")
-
-        st.markdown(
-            "<--------Also Do checkout the another cool tool from the sidebar which is left side")
 
         Analyzer_choice = st.selectbox("Select the Activities",  [
                                        "Show Recent Tweets", "Generate WordCloud", "Visualize the Sentiment Analysis"])
@@ -70,22 +123,18 @@ def app():
 
                 def Show_Recent_Tweets(raw_text):
                     rl = []
-                    for status in tweepy.Cursor(api.user_timeline, screen_name=raw_text, tweet_mode="extended").items(5):
-                        rl.append(status.full_text)
+                    for i in range(0, 6):
+                        rl.append(TweetsData['Tweets'][i])
                     return(rl)
 
-                recent_tweets = Show_Recent_Tweets(raw_text)
+                recent_tweets = Show_Recent_Tweets(UserID)
                 st.write(recent_tweets)
 
             elif(Analyzer_choice == "Generate WordCloud"):
                 st.success("Generating Word Cloud")
 
                 def gen_wordcloud():
-                    posts = tweepy.Cursor(
-                        api.user_timeline, screen_name=raw_text, tweet_mode="extended").items(No_Of_Tweets)
-                    # Create a dataframe with a column called Tweets
-                    df = pd.DataFrame(
-                        [tweet.full_text for tweet in posts], columns=['Tweets'])
+                    df = TweetsData
                     # word cloud visualization
                     allWords = ' '.join([twts for twts in df['Tweets']])
                     wordCloud = WordCloud(
@@ -103,11 +152,7 @@ def app():
                 def Plot_Analysis():
                     st.success(
                         "Generating Visualisation for Sentiment Analysis of the User Given.")
-
-                    posts = tweepy.Cursor(
-                        api.user_timeline, screen_name=raw_text, tweet_mode="extended").items(No_Of_Tweets)
-                    df = pd.DataFrame(
-                        [tweet.full_text for tweet in posts], columns=['Tweets'])
+                    df = TweetsData
 
                     # Create a function to clean the tweets
                     def cleanTxt(text):
@@ -148,67 +193,6 @@ def app():
                 df = Plot_Analysis()
                 st.write(sns.countplot(x=df["Analysis"], data=df))
                 st.pyplot(use_container_width=True)
-    elif(choice == "Generate Twitter Data"):
-        st.subheader(
-            "This tool fetches the last "+No_Of_Tweets_In_String+" tweets from the twitter handel & Performs the following tasks")
-        st.write("1. Converts it into a DataFrame")
-        st.write("2. Cleans the text")
-        st.write(
-            "3. Analyzes Subjectivity of tweets and adds an additional column for it")
-        st.write(
-            "4. Analyzes Polarity of tweets and adds an additional column for it")
-        st.write(
-            "5. Analyzes Sentiments of tweets and adds an additional column for it")
-
-        user_name = st.text_area(
-            "*Enter the exact twitter handle of the Personality (without @)*")
-        st.markdown(
-            "<--------Also Do checkout the another cool tool from the sidebar")
-
-        def get_data(user_name):
-            posts = tweepy.Cursor(
-                api.user_timeline, screen_name=user_name, tweet_mode="extended").items(No_Of_Tweets)
-            df = pd.DataFrame(
-                [tweet.full_text for tweet in posts], columns=['Tweets'])
-
-            # cleaning the twitter text function
-            def cleanTxt(text):
-                text = re.sub('@[A-Za-z0–9]+', '', text)  # Removing @mentions
-                text = re.sub('#', '', text)  # Removing '#' hash tag
-                text = re.sub('RT[\s]+', '', text)  # Removing RT
-                text = re.sub('https?:\/\/\S+', '', text)  # Removing hyperlink
-                return(text)
-
-            # Clean the tweets
-            df['Tweets'] = df['Tweets'].apply(cleanTxt)
-
-            def getSubjectivity(text):
-                return(TextBlob(text).sentiment.subjectivity)
-
-            # Create a function to get the polarity
-            def getPolarity(text):
-                return(TextBlob(text).sentiment.polarity)
-
-            # Create two new columns 'Subjectivity' & 'Polarity'
-            df['Subjectivity'] = df['Tweets'].apply(getSubjectivity)
-            df['Polarity'] = df['Tweets'].apply(getPolarity)
-
-            def getAnalysis(score):
-                if(score < 0):
-                    return("Negative")
-                elif(score == 0):
-                    return("Neutral")
-                else:
-                    return("Positive")
-
-            df['Analysis'] = df['Polarity'].apply(getAnalysis)
-            return(df)
-
-        if(st.button("Show Data")):
-            st.success("Fetching Last "+No_Of_Tweets_In_String+" Tweets")
-            df = get_data(user_name)
-            st.write(df)
-
     elif(choice == "Tweet Analyzer Using K Means"):
         st.subheader(
             "This tool fetches the last "+No_Of_Tweets_In_String+" tweets from the twitter handel & Performs the following tasks")
@@ -221,35 +205,20 @@ def app():
         st.write(
             "5. Analyzes Sentiments of tweets and adds an additional column for it")
 
-        user_name = st.text_area(
-            "*Enter the exact twitter handle of the Personality (without @)*")
-        st.markdown(
-            "<--------Also Do checkout the another cool tool from the sidebar")
-
         if(st.button("Analyze")):
+            TweetsData = collectData()
 
-            def get_data(user_name):
-                posts = tweepy.Cursor(
-                    api.user_timeline, screen_name=user_name, tweet_mode="extended").items(No_Of_Tweets)
-                df = pd.DataFrame(
-                    [tweet.full_text for tweet in posts], columns=['Tweets'])
+            def cleanTxt(text):
+                # Removing @mentions
+                text = re.sub('@[A-Za-z0–9]+', '', text)
+                text = re.sub('#', '', text)  # Removing '#' hash tag
+                text = re.sub('RT[\s]+', '', text)  # Removing RT
+                text = re.sub('https?:\/\/\S+', '', text)  # Removing hyperlink
+                return(text)
+            # Clean the tweets
+            TweetsData['Tweets'] = TweetsData['Tweets'].apply(cleanTxt)
 
-                # cleaning the twitter text function
-                def cleanTxt(text):
-                    # Removing @mentions
-                    text = re.sub('@[A-Za-z0–9]+', '', text)
-                    text = re.sub('#', '', text)  # Removing '#' hash tag
-                    text = re.sub('RT[\s]+', '', text)  # Removing RT
-                    # Removing hyperlink
-                    text = re.sub('https?:\/\/\S+', '', text)
-                    return(text)
-
-                # Clean the tweets
-                df['Tweets'] = df['Tweets'].apply(cleanTxt)
-
-                return(df)
-
-            df = get_data(user_name)
+            df = TweetsData
             # TFIDF Approach
             tf_idf_vect = CountVectorizer(analyzer='word', ngram_range=(
                 1, 1), stop_words='english', min_df=0.0001)
@@ -338,7 +307,6 @@ def app():
             st.success("Fetching Last "+No_Of_Tweets_In_String+" Tweets")
             df = get_data(SearchKeyword)
             st.write(df)
-
     st.subheader(
         ' ---------------Created By :  Project 304 @KL University --------------- :sunglasses:')
 
