@@ -206,7 +206,10 @@ def app():
             "5. Analyzes Sentiments of tweets and adds an additional column for it")
 
         if(st.button("Analyze")):
+            st.success("Please wait while working on K means......")
             TweetsData = collectData()
+            st.success(
+                "Collecting the data once again to verify we got the right data or not...")
 
             def cleanTxt(text):
                 # Removing @mentions
@@ -216,6 +219,7 @@ def app():
                 text = re.sub('https?:\/\/\S+', '', text)  # Removing hyperlink
                 return(text)
             # Clean the tweets
+            st.success("Cleaning the data ...")
             TweetsData['Tweets'] = TweetsData['Tweets'].apply(cleanTxt)
 
             df = TweetsData
@@ -224,12 +228,15 @@ def app():
                 1, 1), stop_words='english', min_df=0.0001)
             tf_idf_vect.fit(df['Tweets'])  # Here the formula internally works
             desc_matrix = tf_idf_vect.transform(df["Tweets"])
-
+            st.success("Done with TFIDF Approach ...")
+            st.success("working on K means...")
             # K Means Clustering
             num_clusters = 3
             km = KMeans(n_clusters=num_clusters)
             km.fit(desc_matrix)
             clusters = km.labels_.tolist()
+
+            st.success("Done with Clustering see the below results...")
 
             # create DataFrame films from all of the input files.
             st.subheader(
@@ -242,10 +249,14 @@ def app():
                 "Showing the Different Clusters which are +ve, -ve and Neutral:")
             st.write("Positive Cluster:")
             st.write(frame[frame['Cluster'] == 1])  # positive cluster
-            st.write("Negative cluster:")
-            st.write(frame[frame['Cluster'] == 2])  # Negative cluster
             st.write("Neutral cluster:")
-            st.write(frame[frame['Cluster'] == 0])  # Neutral cluster
+            st.write(frame[frame['Cluster'] == 2])  # Neutral cluster
+            st.write("Negative cluster:")
+            st.write(frame[frame['Cluster'] == 0])  # Negative cluster
+            st.write("Final summary:")
+            # neutral =
+            st.write(frame['Cluster'].value_counts())
+
     else:
         st.subheader(
             "This tool fetches the last "+No_Of_Tweets_In_String+" tweets from the twitter handel & Performs the following tasks")
@@ -262,13 +273,17 @@ def app():
             "*Enter the keyword to be search to collect the data*")
         st.markdown(
             "<--------Also Do checkout the another cool tool from the sidebar")
-        date_since = "2018-11-16"
+        date_since = "2010-1-1"
 
         def get_data(SearchKeyword):
+            st.success("Fetching Last "+No_Of_Tweets_In_String +
+                       " Tweets Please wait........")
             posts = tweepy.Cursor(
                 api.search, q=SearchKeyword, lang="en", since=date_since).items(No_Of_Tweets)
+            st.success("Collected the data and converting it to Data frame.")
             df = pd.DataFrame(
                 [tweet.text for tweet in posts], columns=['Tweets'])
+            st.success("converted to data frame of collected Tweets")
 
             # cleaning the twitter text function
             def cleanTxt(text):
@@ -280,6 +295,7 @@ def app():
 
             # Clean the tweets
             df['Tweets'] = df['Tweets'].apply(cleanTxt)
+            st.success("Finished with cleaning the data")
 
             def getSubjectivity(text):
                 return(TextBlob(text).sentiment.subjectivity)
@@ -291,6 +307,8 @@ def app():
             # Create two new columns 'Subjectivity' & 'Polarity'
             df['Subjectivity'] = df['Tweets'].apply(getSubjectivity)
             df['Polarity'] = df['Tweets'].apply(getPolarity)
+            st.success(
+                "Assainged the values of subjectivity and polarity for each tweet.")
 
             def getAnalysis(score):
                 if(score < 0):
@@ -299,12 +317,11 @@ def app():
                     return("Neutral")
                 else:
                     return("Positive")
-
+            st.success("Final step please wait.........")
             df['Analysis'] = df['Polarity'].apply(getAnalysis)
             return(df)
 
         if(st.button("Show Data")):
-            st.success("Fetching Last "+No_Of_Tweets_In_String+" Tweets")
             df = get_data(SearchKeyword)
             st.write(df)
     st.subheader(
